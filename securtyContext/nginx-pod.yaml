@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  # annotations:
+  #   container.apparmor.security.beta.kubernetes.io/nginx-pod: localhost/docker-nginx
+  labels:
+    run: nginx-pod
+  name: nginx-pod
+  namespace: security
+spec:
+  imagePullSecrets:
+    - name: regcred
+  containers:
+  - image: registry.gitlab.com/ica1/ops/shift-left/nginx:local
+    name: nginx-pod
+    ports:
+      - containerPort: 8088
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 250m
+        memory: 250Mi
+    securityContext:
+      readOnlyRootFilesystem: false
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+        add:
+          - CHOWN
+          - DAC_OVERRIDE
+          - SETGID
+          - SETUID
+          - NET_BIND_SERVICE
+    volumeMounts:
+      - mountPath: /var/cache/nginx
+        subPath: nginx
+        name: var-cache
+      - mountPath: /var/run
+        subPath: nginx
+        name: var-run
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  securityContext:
+    # runAsUser: 101
+    # runAsGroup: 0
+    # fsGroup: 2000
+    # seccompProfile:
+    #   type: Localhost
+    #   localhostProfile: "profiles/fine-grained.json"
+    seccompProfile:
+      type: RuntimeDefault
+  volumes:
+    - name: var-cache
+      persistentVolumeClaim:
+        claimName: nginx-var-cache-pvc
+    - name: var-run
+      persistentVolumeClaim:
+        claimName: nginx-var-run-pvc
+status: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nginx-var-cache-pvc
+  namespace: security
+spec:
+  resources:
+    requests:
+      storage: 5Gi
+  volumeMode: Filesystem
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nginx-var-run-pvc
+  namespace: security
+spec:
+  resources:
+    requests:
+      storage: 5Gi
+  volumeMode: Filesystem
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
