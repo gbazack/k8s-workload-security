@@ -1,2 +1,10 @@
 .history/
 .trunk*
+deployment*
+encryption/*
+pod-security/*
+opa/*
+securtyContext/Dockerfile*
+securtyContext/capabilities*
+securtyContext/syscall*
+securtyContext/generate-seccomp-profile.sh

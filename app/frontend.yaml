@@ -1,0 +1,154 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: security
+    tier: frontend
+  name: frontend
+  namespace: opensee-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: security
+      tier: frontend
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 70%
+      maxSurge: 50%
+  template:
+    metadata:
+      labels:
+        app: security
+        tier: frontend
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/nginx-container: runtime/default
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - image: nginx:1.24
+        name: nginx-container
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 250m
+            memory: 250Mi
+        ports:
+        - containerPort: 80
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+status: {}
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   labels:
+#     app: rafal
+#     tier: mdx
+#   name: mdx
+#   namespace: opensee-dev
+# spec:
+#   replicas: 3
+#   selector:
+#     matchLabels:
+#       app: rafal
+#       tier: mdx
+#   strategy:
+#     rollingUpdate:
+#       maxUnavailable: 70%
+#       maxSurge: 50%
+#   template:
+#     metadata:
+#       labels:
+#         app: rafal
+#         tier: mdx
+#       annotations:
+#         container.apparmor.security.beta.kubernetes.io/mdx: runtime/default
+#     spec:
+#       imagePullSecrets:
+#       - name: regcred
+#       containers:
+#       - image: nginx:1.24
+#         name: mdx
+#         imagePullPolicy: Always
+#         resources:
+#           requests:
+#             cpu: 100m
+#             memory: 100Mi
+#           limits:
+#             cpu: 250m
+#             memory: 250Mi
+#         ports:
+#         - containerPort: 80
+#         securityContext:
+#           allowPrivilegeEscalation: false
+#           capabilities:
+#             drop:
+#             - SYS_CHROOT
+#             - DAC_OVERRIDE
+#       securityContext:
+#         runAsUser: 0
+#         runAsGroup: 0
+# status: {}
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   labels:
+#     app: rafal
+#     tier: dms
+#   name: dms
+#   namespace: opensee-dev
+# spec:
+#   replicas: 3
+#   selector:
+#     matchLabels:
+#       app: rafal
+#       tier: dms
+#   strategy:
+#     rollingUpdate:
+#       maxUnavailable: 70%
+#       maxSurge: 50%
+#   template:
+#     metadata:
+#       labels:
+#         app: rafal
+#         tier: dms
+#     spec:
+#       imagePullSecrets:
+#       - name: regcred
+#       containers:
+#       - image: nginx:1.24
+#         name: nginx-container
+#         imagePullPolicy: Always
+#         resources:
+#           requests:
+#             cpu: 100m
+#             memory: 100Mi
+#           limits:
+#             cpu: 250m
+#             memory: 250Mi
+#         ports:
+#         - containerPort: 80
+#         securityContext:
+#           allowPrivilegeEscalation: false
+#           capabilities:
+#             drop:
+#             - SYS_CHROOT
+#             - DAC_OVERRIDE
+#       securityContext:
+#         runAsUser: 0
+#         runAsGroup: 0
+# status: {}
